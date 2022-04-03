@@ -1,0 +1,42 @@
+#!/usr/bin/bash
+
+LAST_COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+COAUTHORS=$(echo "$LAST_COMMIT_MESSAGE" | grep "Co-authored-by:" | cut -c 17-)
+
+if test -z "$COAUTHORS"
+then
+	NEW_COAUTHORS=$(git log | rg Author | cut -c 9- | sort | uniq | fzf -m)
+else
+	NEW_COAUTHORS=$(git log | rg Author | cut -c 9- | sort | uniq | grep -v "$COAUTHORS" | fzf -m)
+fi
+
+if test -z "$NEW_COAUTHORS"
+then
+	exit 1
+fi
+
+NEW_FORMATED_COAUTHORS=""
+
+while read author; do
+
+	if test -z "$NEW_FORMATED_COAUTHORS"
+	then
+		NEW_FORMATED_COAUTHORS="Co-authored-by: $author"
+	else
+		NEW_FORMATED_COAUTHORS="$NEW_FORMATED_COAUTHORS
+Co-authored-by: $author"
+	fi
+
+done <<< "$NEW_COAUTHORS"
+
+
+if test -z "$COAUTHORS"
+then
+    git commit --amend -m "$LAST_COMMIT_MESSAGE
+
+
+$NEW_FORMATED_COAUTHORS"
+else
+    git commit --amend -m "$LAST_COMMIT_MESSAGE
+$NEW_FORMATED_COAUTHORS"
+fi
