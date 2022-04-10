@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 
 LAST_COMMIT_MESSAGE=$(git log -1 --pretty=%B)
 COAUTHORS=$(echo "$LAST_COMMIT_MESSAGE" | grep "Co-authored-by:" | cut -c 17-)
